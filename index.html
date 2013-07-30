@@ -3,25 +3,85 @@
   <head>
     <script src="jquery.js"></script>
     <script src="data_generator.js"></script>
+    <script src="underbar.js"></script>
+    <link rel="stylesheet" href="stylesheet.css" type="text/css" />
   </head>
   <body>
+
+    <div class="container">
+      <div class="top">
+        <button id='refresh'>refresh</button>
+      </div>
+      <div class="messages">
+        <div class="displayed" id="a1"></div>
+        <div class="displayed" id="a2"></div>
+        <div class="displayed" id="a3"></div>
+        <div class="displayed" id="a4"></div>
+        <div class="displayed" id="a5"></div>
+        <div class="displayed" id="a6"></div>
+        <div class="displayed" id="a7"></div>
+        <div class="displayed" id="a8"></div>
+        <div class="displayed" id="a9"></div>
+      </div>
+    </div>
     <script>
 
       $(document).ready(function(){
+
         var $body = $('body');
-        $body.html('');
 
-        var index = streams.home.length - 1;
-        while(index >= 0){
+        $("#refresh").on('click', function() {
+          var index = streams.home.length - 1;
           var tweet = streams.home[index];
-          var $tweet = $('<div></div>');
-          $tweet.text('@' + tweet.user + ': ' + tweet.message);
-          $tweet.appendTo($body);
-          index -= 1;
-        }
+          for(var i = 5; i < 10; i++){
+            if (tweet.collected !== true && $('#a'+i).text() === '') {
+              $('#a'+i).text('@' + tweet.user + ': ' + tweet.message + ' (' + tweet.created_at + ')');
+              tweet.collected = true;
+            }
+            index -= 1;
+          }
+          while(index >= 0){
+            if (tweet.collected !== true) {
+              var $tweet = $('<div class="hidden"></div>');
+              $tweet.text('@' + tweet.user + ': ' + tweet.message + ' (' + tweet.created_at + ')');
+              $tweet.appendTo('.messages');
+              tweet.collected = true;
+            }
+            index -= 1;
+          }
+        });
 
-      });
+        $("#refresh").click()
+
+        var fetcher = setInterval(function() {$("#refresh").click()}, 5000);
+
+/*        var lastScrollTop = 0, delta = 5;
+        var scroller = function() {
+          alert("Scrolled!")
+          var st = $(this).scrollTop();
+         
+          if(Math.abs(lastScrollTop - st) <= delta) {return;}
+     
+          if (st > lastScrollTop){
+            for (var i = 9; i >= 1; i--) {
+              $('#a' + i).text($('#a' + i).next().text());
+            }
+           console.log('scroll down');
+          } else {
+            for (var i = 1; i <= 9; i++) {
+              $('#a' + i).text($('#a' + i).prev().text());
+            }
+            console.log('scroll up');
+          }
+          lastScrollTop = st;
+        };
+
+        $(".messages").on('scroll', scroller());
+
+        }); */
 
     </script>
+
+
   </body>
 </html>

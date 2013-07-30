@@ -1,0 +1,48 @@
+.container 
+{
+  width: 95%;
+  height: 95%;
+  background-color: #f6ffef;
+  border: solid;
+  border-radius: 10px;
+  border-color: black;
+  border-width: 10px;
+  margin: 2%;
+}
+
+.messages {
+	overflow: scroll;
+	height: 50%;
+	width: 95%;
+}
+
+.displayed {
+	width: 95%;
+	height: 5.555%;
+	margin: 2%;
+}
+
+.hidden {
+	visibility: hidden;
+	height: 0px;
+}
+
+#a1, #a9 {
+	font-size: 8px;
+}
+
+#a2, #a8 {
+	font-size: 10px;
+}
+
+#a3, #a7 {
+	font-size: 12px;
+}
+
+#a4, #a6 {
+	font-size: 14px;
+}
+#a5 {
+	font-size: 18px;
+	font-weight: bold;
+}
