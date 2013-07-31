@@ -4,6 +4,7 @@
     <script src="jquery.js"></script>
     <script src="data_generator.js"></script>
     <script src="underbar.js"></script>
+    <script src="moment.min.js"></script>
     <link rel="stylesheet" href="stylesheet.css" type="text/css" />
   </head>
   <body>
@@ -40,15 +41,14 @@
 
         var puller = function() {
           var index = streams.home.length;
+          arrtext.length = 0;
           for (var i = 0 ; i < index ; i++) {
             var tweet = streams.home[i];
-            if (tweet.collected !== true) {
-               arrtext.unshift('@' + '<span id="' + tweet.user + '">' + tweet.user + '</span>' + ': ' + tweet.message + ' (' + tweet.created_at + ')');
-               tweet.collected = true;
-               if (arrtext.length > limit) {
-                arrtext.splice(limit, arrtext.length-limit)
-               }
-            };
+            arrtext.unshift('@' + '<span id="' + tweet.user + '">' + tweet.user + '</span>' + ': ' + tweet.message + '<span id="time">' + '   (' + moment(tweet.created_at).fromNow() + ')' + '</span>' );
+            tweet.collected = true;
+            if (arrtext.length > limit) {
+              arrtext.splice(limit, arrtext.length-limit)
+            }
           }
         }
 

@@ -5,9 +5,13 @@ body {
    height: 100%;
 }
 
-span {
-	font-size: 24;
+span:not(#time) {
 	color: blue;
+}
+
+#time {
+	font-size: 10px;
+	opacity: 0.9;
 }
 
 
