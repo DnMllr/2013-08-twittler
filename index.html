@@ -36,47 +36,69 @@
 
         var arrtext = [];
 
-        var limit = 30;
-
-        var dater = function(milli) {
-          if (milli < 1000) {
-            return (milli + " milliseconds ago");
-          } else if (milli < 60000) {
-            return (Math.floor(milli/1000) + " seconds ago");
-          } else if (milli < 3600000) {
-            return (Math.floor(milli/60000) + " minutes ago");
-          } else {
-            return (Math.floor(milli/3600000) + " hours ago");
-          }
-        }
+        var limit = 30000;
 
         var puller = function() {
-          var index = streams.home.length - 1;
-          while(index >= 0) {
-            var tweet = streams.home[index];
-            var createdtime = tweet.created_at;
-            var currenttime = new Date();
-            var difference = currenttime - createdtime;
+          var index = streams.home.length;
+          for (var i = 0 ; i < index ; i++) {
+            var tweet = streams.home[i];
             if (tweet.collected !== true) {
-               arrtext.unshift('@' + '<span id="' + tweet.user + '">' + tweet.user + '</span>' + ': ' + tweet.message + ' (' + dater(difference) + ')');
+               arrtext.unshift('@' + '<span id="' + tweet.user + '">' + tweet.user + '</span>' + ': ' + tweet.message + ' (' + tweet.created_at + ')');
                tweet.collected = true;
                if (arrtext.length > limit) {
                 arrtext.splice(limit, arrtext.length-limit)
                }
-            }
-            index -= 1;
+            };
           }
         }
 
+        var spanner = function() {
+          $('span').on('click', function() {
+            $('#timeline').empty()
+            var name1 = $(this).attr('id');
+            var coll = streams.users[name1]
+            var index = coll.length - 1;
+            while(index >= 0){
+              var tweet = coll[index];
+              var $tweet = $('<div></div>');
+              $tweet.text('@' + tweet.user + ': ' + tweet.message);
+              $tweet.appendTo('#timeline');
+              index -= 1;
+            }
+          });
+        };
+
+        var scroller = function() {
+          $('.displayed').on('click', function(){
+            var times = $(this).attr('id');
+            times = +times.slice(1);
+            if (times < 5) {
+              for (var i = 0 ; i < 5 - times ; i++) {
+                $('#up').click();
+              }
+            } else if (times > 5) {
+              for (var i = 5; i < times ; i++) {
+                $('#down').click();
+              }
+            }
+          });
+        };
+
         var placer = function() {
-          var location = _.indexOf(arrtext, $('#a5').text());
+          var location = _.indexOf(arrtext, $('#a5').html());
+          var location2 = $('#a5').index();
+          var size = $('#messages').children().size();
+          for (var i = 0 ; i < location - location2; i++) {
+            $("#messages").prepend('<div class="hidden"></div>')
+          }
           if ($('#a4').text() === '') {
             restarter();
           } else {
             _.each(arrtext, function(item, i) {
-              $("#messages > div:nth-child(" + i + ")").text(item);
+              $("#messages > div:nth-child(" + (i + 1) + ")").empty().append(item);
             });
           }
+          spanner();
         };
 
         var restarter = function(){
@@ -99,11 +121,15 @@
               }
             }
           }
+          spanner();
+          scroller();
         };
 
         var standardbehavior = function() {
           puller();
           placer();
+          spanner();
+          scroller();
         };
 
         var interval = setInterval(standardbehavior(), 5000);
@@ -112,6 +138,7 @@
           puller();
           restarter();
         });
+
 
         $('#down').on('click', function(){
           for (var i = 0 ; i < 11 ; i++) {
@@ -123,19 +150,30 @@
               $('#a'+i).attr('id', 'a' + (i-1));
             }
           }
+          scroller()
         });
 
         $('#up').on('click', function(){
-          for (var i = 9 ; i >= -1 ; i--) {
-            if (i === -1) {
-              $('#a1').prev().removeClass().addClass("displayed").attr('id', 'a0');
-            } else if (i === 9) {
-              $('#a'+i).removeClass().addClass("hidden").removeAttr("id");
-            } else {
-              $('#a'+i).attr('id', 'a' + (i+1));
+          if ($('#messages').children().first().attr('id') !== 'a0') {
+            for (var i = 9 ; i >= -1 ; i--) {
+              if (i === -1) {
+                $('#a1').prev().removeClass().addClass("displayed").attr('id', 'a0');
+              } else if (i === 9) {
+                $('#a'+i).removeClass().addClass("hidden").removeAttr("id");
+              } else {
+                $('#a'+i).attr('id', 'a' + (i+1));
+              }
+            }
+          } else {
+            restarter();
+            for (var i = 0 ; i < 3 ; i++) {
+              $('#down').click();
             }
           }
+          scroller()
         });
+
+        scroller()
 
         $('#standard').on('click', function() {
           standardbehavior();
@@ -146,19 +184,7 @@
           console.log(arrtext.length - _.uniq(arrtext).length);
         });
 
-        $('span').on('click', function() {
-          $('#timeline').empty()
-          var name1 = $(this).attr('id');
-          var coll = streams.users[name1]
-          var index = coll.length - 1;
-          while(index >= 0){
-            var tweet = coll[index];
-            var $tweet = $('<div></div>');
-            $tweet.text('@' + tweet.user + ': ' + tweet.message);
-            $tweet.appendTo('#timeline');
-            index -= 1;
-          }
-        });
+        spanner()
 
       }); 
 

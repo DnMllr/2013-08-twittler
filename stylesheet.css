@@ -7,7 +7,9 @@ body {
 
 span {
 	font-size: 24;
+	color: blue;
 }
+
 
 #waist {
 	display: inline-block;
@@ -26,7 +28,7 @@ span {
 
 #messages {
 	background-color: white;
-	height: 313px;
+	height: 400px;
 	width: 65%;
 	margin: 1%;
 	margin-left: 32%;
@@ -34,10 +36,11 @@ span {
 
 #timeline {
 	background-color: white;
-	height: 313px;
+	height: 400px;
 	width: 30%;
 	margin: 1%;
 	float: left;
+	overflow: scroll;
 }
 
 .displayed {
@@ -73,5 +76,6 @@ span {
 #a5 {
 	font-size: 18px;
 	font-weight: bold;
+	vertical-align: middle;
 }
 
