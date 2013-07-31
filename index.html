@@ -7,12 +7,16 @@
     <link rel="stylesheet" href="stylesheet.css" type="text/css" />
   </head>
   <body>
-
+    <div class="top">
+      <button id='refresh'>refresh</button>
+      <button id='up'>Scroll Up</button>
+      <button id='down'>Scroll Down</button>
+      <button id='standard'>Standard</button>
+      <button id='dump'>Dump ArrText</button>
+    </div>
     <div class="container">
-      <div class="top">
-        <button id='refresh'>refresh</button>
-      </div>
-      <div class="messages">
+      <div class="waist" id="timeline">Hello!</div>
+      <div class="waist" id="messages">
         <div class="displayed" id="a1"></div>
         <div class="displayed" id="a2"></div>
         <div class="displayed" id="a3"></div>
@@ -30,55 +34,133 @@
 
         var $body = $('body');
 
-        $("#refresh").on('click', function() {
+        var arrtext = [];
+
+        var limit = 30;
+
+        var dater = function(milli) {
+          if (milli < 1000) {
+            return (milli + " milliseconds ago");
+          } else if (milli < 60000) {
+            return (Math.floor(milli/1000) + " seconds ago");
+          } else if (milli < 3600000) {
+            return (Math.floor(milli/60000) + " minutes ago");
+          } else {
+            return (Math.floor(milli/3600000) + " hours ago");
+          }
+        }
+
+        var puller = function() {
           var index = streams.home.length - 1;
-          var tweet = streams.home[index];
-          for(var i = 5; i < 10; i++){
-            if (tweet.collected !== true && $('#a'+i).text() === '') {
-              $('#a'+i).text('@' + tweet.user + ': ' + tweet.message + ' (' + tweet.created_at + ')');
-              tweet.collected = true;
+          while(index >= 0) {
+            var tweet = streams.home[index];
+            var createdtime = tweet.created_at;
+            var currenttime = new Date();
+            var difference = currenttime - createdtime;
+            if (tweet.collected !== true) {
+               arrtext.unshift('@' + '<span id="' + tweet.user + '">' + tweet.user + '</span>' + ': ' + tweet.message + ' (' + dater(difference) + ')');
+               tweet.collected = true;
+               if (arrtext.length > limit) {
+                arrtext.splice(limit, arrtext.length-limit)
+               }
             }
             index -= 1;
           }
-          while(index >= 0){
-            if (tweet.collected !== true) {
-              var $tweet = $('<div class="hidden"></div>');
-              $tweet.text('@' + tweet.user + ': ' + tweet.message + ' (' + tweet.created_at + ')');
-              $tweet.appendTo('.messages');
-              tweet.collected = true;
+        }
+
+        var placer = function() {
+          var location = _.indexOf(arrtext, $('#a5').text());
+          if ($('#a4').text() === '') {
+            restarter();
+          } else {
+            _.each(arrtext, function(item, i) {
+              $("#messages > div:nth-child(" + i + ")").text(item);
+            });
+          }
+        };
+
+        var restarter = function(){
+          puller();
+          $('#messages').empty();
+          for (var i = 0 ; i < arrtext.length ; i++) {
+            if (i < 5) {
+              $("#messages").append('<div class="displayed" id="a' + i + '"></div>');
+            } else if (i < 10) {
+              if (arrtext[i-5] === undefined) {
+                $("#messages").append('<div class="displayed" id="a' + i + '"></div>');
+              } else {
+                $("#messages").append('<div class="displayed" id="a' + i + '">' + arrtext[i-5] + '</div>');
+              }
+            } else {
+              if (arrtext[i-5] === undefined) {
+                $("#messages").append('<div class="hidden"></div>');
+              } else {
+                $("#messages").append('<div class="hidden">' + arrtext[i-5] + '></div>');
+              }
             }
+          }
+        };
+
+        var standardbehavior = function() {
+          puller();
+          placer();
+        };
+
+        var interval = setInterval(standardbehavior(), 5000);
+
+        $('#refresh').on('click', function(){
+          puller();
+          restarter();
+        });
+
+        $('#down').on('click', function(){
+          for (var i = 0 ; i < 11 ; i++) {
+            if (i === 0) {
+              $('#a'+i).removeClass().addClass("hidden").removeAttr("id");
+            } else if (i === 10) {
+              $('#a8').next().removeClass().addClass("displayed").attr('id', 'a9');
+            } else {
+              $('#a'+i).attr('id', 'a' + (i-1));
+            }
+          }
+        });
+
+        $('#up').on('click', function(){
+          for (var i = 9 ; i >= -1 ; i--) {
+            if (i === -1) {
+              $('#a1').prev().removeClass().addClass("displayed").attr('id', 'a0');
+            } else if (i === 9) {
+              $('#a'+i).removeClass().addClass("hidden").removeAttr("id");
+            } else {
+              $('#a'+i).attr('id', 'a' + (i+1));
+            }
+          }
+        });
+
+        $('#standard').on('click', function() {
+          standardbehavior();
+        });
+
+        $('#dump').on('click', function() {
+          console.log(arrtext);
+          console.log(arrtext.length - _.uniq(arrtext).length);
+        });
+
+        $('span').on('click', function() {
+          $('#timeline').empty()
+          var name1 = $(this).attr('id');
+          var coll = streams.users[name1]
+          var index = coll.length - 1;
+          while(index >= 0){
+            var tweet = coll[index];
+            var $tweet = $('<div></div>');
+            $tweet.text('@' + tweet.user + ': ' + tweet.message);
+            $tweet.appendTo('#timeline');
             index -= 1;
           }
         });
 
-        $("#refresh").click()
-
-        var fetcher = setInterval(function() {$("#refresh").click()}, 5000);
-
-/*        var lastScrollTop = 0, delta = 5;
-        var scroller = function() {
-          alert("Scrolled!")
-          var st = $(this).scrollTop();
-         
-          if(Math.abs(lastScrollTop - st) <= delta) {return;}
-     
-          if (st > lastScrollTop){
-            for (var i = 9; i >= 1; i--) {
-              $('#a' + i).text($('#a' + i).next().text());
-            }
-           console.log('scroll down');
-          } else {
-            for (var i = 1; i <= 9; i++) {
-              $('#a' + i).text($('#a' + i).prev().text());
-            }
-            console.log('scroll up');
-          }
-          lastScrollTop = st;
-        };
-
-        $(".messages").on('scroll', scroller());
-
-        }); */
+      }); 
 
     </script>
 
